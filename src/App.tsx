@@ -1,24 +1,42 @@
+import { Layout, PageHeader, Tag } from 'antd';
+import { Content, Footer } from 'antd/lib/layout/layout';
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import 'antd/dist/antd.min.css'
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { MapDisplay } from './components/MapDisplay';
+import DataDisplay from './components/DataDisplay';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <Layout className="layout">
+        <PageHeader 
+            title='Geo Gedcom'
+            subTitle='Convert your familly tree into an interactive map'
+            tags={[<Tag key={'gedcom' } color='cyan'>Gedcom</Tag>,<Tag key={'geojson'} color='green'>Geojson</Tag>]}
+        />
+        <Content
+        style={{
+            display:'flex',
+            minHeight:'100%',
+            height:'100%',
+            justifyContent:'space-between',
+            padding: '0 50px',
+            gap:'10px'
+        }}
         >
-          Learn React
-        </a>
-      </header>
+            <DataDisplay/>
+            <MapDisplay/>
+        </Content>
+        <Footer
+        style={{
+            textAlign: 'center',
+        }}
+        >
+        Geo Gedcom 2022 Created by Keldaan
+        </Footer>
+    </Layout>
     </div>
   );
 }

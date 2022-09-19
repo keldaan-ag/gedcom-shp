@@ -1,4 +1,8 @@
-import { JsonParsing, ParsingOptions } from "gedcom.json";
+export function empty(){
+    
+}
+
+/*import { JsonParsing, ParsingOptions } from "gedcom.json";
 import { Gedcom, Individual } from './types'
 import fetch from 'node-fetch'
 import * as dotenv from 'dotenv'
@@ -181,3 +185,4 @@ async function main(){
 }
 
 main()
+*/
