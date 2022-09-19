@@ -1,25 +1,38 @@
-import maplibregl from 'maplibre-gl';
-import { useEffect, useRef, useState } from 'react';
+import { Map, GeoJson } from "pigeon-maps"
+import { GeoJSON } from 'geojson';
 
-export function MapDisplay(){
-    const map = useRef<undefined | maplibregl.Map>(undefined);
-    const [lng] = useState(2);
-    const [lat] = useState(47);
-    const [zoom] = useState(5);
-
-    useEffect(() => {
-        if (map.current) return;
-        map.current = new maplibregl.Map({
-          container: 'map',
-          style: `https://demotiles.maplibre.org/style.json`,
-          center: [lng, lat],
-          zoom: zoom
-        });
-      });
+export function MapDisplay(props:{points: GeoJSON, relations: GeoJSON}){
 
     return (
-        <div className="map-wrap">
-          <div className="map" id='map'/>
-        </div>
+      <Map height={800} width={900} defaultCenter={[48, 2]} defaultZoom={6}>
+      <GeoJson
+        data={props.points}
+        styleCallback={(feature, hover) => {
+          if (feature.geometry.type === "LineString") {
+            return { strokeWidth: "1", stroke: "black" };
+          }
+          return {
+            fill: "#ff0000",
+            strokeWidth: "1",
+            stroke: "white",
+            r: "10",
+          };
+        }}
+      />
+      <GeoJson
+        data={props.relations}
+        styleCallback={(feature, hover) => {
+          if (feature.geometry.type === "LineString") {
+            return { strokeWidth: "1", stroke: "black" };
+          }
+          return {
+            fill: "#ff0000",
+            strokeWidth: "1",
+            stroke: "white",
+            r: "10",
+          };
+        }}
+      />
+    </Map>
     )
 }

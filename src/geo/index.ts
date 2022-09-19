@@ -1,13 +1,13 @@
-
-import { JsonParsing, ParsingOptions } from "gedcom.json";
 import { Gedcom, Individual } from '../types'
+import { ParsingOptions, JsonParsing } from './gedcom'
 
 
-export function convertGedcomToJson(data: string){
+export async function convertGedcomToJson(data: string){
     const parsingOptions = new ParsingOptions();
     parsingOptions.SetText(data)
     const parse = new JsonParsing(parsingOptions)
-    const gedcom =  parse.ParseText().Object as Gedcom
+    const result =  await parse.ParseTextAsync()
+    const gedcom = result.Object as Gedcom
     return gedcom
 }
 
@@ -40,31 +40,19 @@ export function collectPlaces(tree: Gedcom){
     return locations
 }
 
-async function delay(milliseconds : number) {
+export async function delay(milliseconds : number) {
     return new Promise(resolve => setTimeout( resolve, milliseconds));
 }
 
-export async function geocodePlaces(locations: string[]){
-    const locationsMap = new Map<string,{latitude: number, longitude: number}>();
-    for (let i = 0; i < locations.length; i++) {
-        const res: any = await geocode(locations[i])
-        await delay(2000)
-        
-        if(res && res.length > 0 && res[0].lat && res[0].lon){
-            console.log(`${i}/${locations.length} ${res[0].display_name}`)
-            locationsMap.set(locations[i],{latitude: parseFloat(res[0].lat), longitude: parseFloat(res[0].lon)})
-        }
-    }
-    return locationsMap
-}
 
-function geocode(location: string){
+
+export function geocode(location: string){
     const query = `https://nominatim.openstreetmap.org/search?q=${location}&format=json`
     return fetch(query).then(res=>res.json()).catch(err=>{console.log(err); return err})
 }
 
 
-function mapIndividuals(gedcom: Gedcom){
+export function mapIndividuals(gedcom: Gedcom){
     const individuals = new Map<string, Individual>()
     gedcom.Individuals.forEach(i=>{
         individuals.set(i.Id, i)
@@ -72,7 +60,7 @@ function mapIndividuals(gedcom: Gedcom){
     return individuals
 }
 
-function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>){
+export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>){
     const points: GeoJSON.GeoJSON = {
         "type": "FeatureCollection",
         "features": []
@@ -104,7 +92,7 @@ function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, lo
     return points
 }
 
-function buildLine(fromId: string, toId: string, individuals: Map<string, Individual>, locations: Map<string,{latitude: number, longitude: number}>, type: string){
+export function buildLine(fromId: string, toId: string, individuals: Map<string, Individual>, locations: Map<string,{latitude: number, longitude: number}>, type: string){
     let line: GeoJSON.LineString | undefined;
     let properties: GeoJSON.GeoJsonProperties | undefined;
     let feature: GeoJSON.Feature | undefined;
@@ -128,7 +116,7 @@ function buildLine(fromId: string, toId: string, individuals: Map<string, Indivi
     return feature
 }
 
-function buildRelations(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>, individuals: Map<string, Individual>){
+export function buildRelations(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>, individuals: Map<string, Individual>){
     const relations: GeoJSON.GeoJSON = {
         "type": "FeatureCollection",
         "features": []

@@ -2,7 +2,8 @@ export enum Status {
     UPLOAD='Upload',
     CONVERSION='Conversion',
     GEOCODE='Geocode',
-    CREATION='Creation'
+    CREATION='Creation',
+    COMPLETE='Complete'
 }
 
 export interface Corporation {

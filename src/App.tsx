@@ -1,14 +1,18 @@
 import { Layout, PageHeader, Tag } from 'antd';
 import { Content, Footer } from 'antd/lib/layout/layout';
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import 'antd/dist/antd.min.css'
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapDisplay } from './components/MapDisplay';
 import DataDisplay from './components/DataDisplay';
 import { GithubOutlined } from '@ant-design/icons';
+import { GeoJSON} from 'geojson';
 
 function App() {
+    const [points, setPoints] = useState<GeoJSON |undefined>()
+    const [relations, setRelations] = useState<GeoJSON | undefined>()
+
   return (
     <div className="App">
     <Layout className="layout">
@@ -27,8 +31,8 @@ function App() {
             gap:'10px'
         }}
         >
-            <DataDisplay/>
-            <MapDisplay/>
+            <DataDisplay setPoints={setPoints} setRelations={setRelations}/>
+            <MapDisplay points={points} relations={relations}/>
         </Content>
         <Footer
         style={{
