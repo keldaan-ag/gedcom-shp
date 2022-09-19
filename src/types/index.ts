@@ -1,3 +1,10 @@
+export enum Status {
+    UPLOAD='Upload',
+    CONVERSION='Conversion',
+    GEOCODE='Geocode',
+    CREATION='Creation'
+}
+
 export interface Corporation {
     Value: string;
     Address: string;

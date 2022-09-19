@@ -1,17 +1,17 @@
-export function empty(){
-    
+
+import { JsonParsing, ParsingOptions } from "gedcom.json";
+import { Gedcom, Individual } from '../types'
+
+
+export function convertGedcomToJson(data: string){
+    const parsingOptions = new ParsingOptions();
+    parsingOptions.SetText(data)
+    const parse = new JsonParsing(parsingOptions)
+    const gedcom =  parse.ParseText().Object as Gedcom
+    return gedcom
 }
 
-/*import { JsonParsing, ParsingOptions } from "gedcom.json";
-import { Gedcom, Individual } from './types'
-import fetch from 'node-fetch'
-import * as dotenv from 'dotenv'
-import fs, { cp } from 'fs'
-import { features } from "process";
-
-dotenv.config()
-
-function collectPlaces(tree: Gedcom){
+export function collectPlaces(tree: Gedcom){
     const locations = new Array<string>()
     tree.Individuals.forEach(individual => {
         if(individual.Birth?.Place && !locations.includes(individual.Birth.Place)){
@@ -44,7 +44,7 @@ async function delay(milliseconds : number) {
     return new Promise(resolve => setTimeout( resolve, milliseconds));
 }
 
-async function geocodePlaces(locations: string[]){
+export async function geocodePlaces(locations: string[]){
     const locationsMap = new Map<string,{latitude: number, longitude: number}>();
     for (let i = 0; i < locations.length; i++) {
         const res: any = await geocode(locations[i])
@@ -171,18 +171,12 @@ function buildRelations(gedcom: Gedcom, locations: Map<string,{latitude: number,
 }
 
 async function main(){
-    const parsingOptions = new ParsingOptions();
-    parsingOptions.SetFilePath('examples/base.ged')
-    const parse = new JsonParsing(parsingOptions)
-    const gedcom = ((await parse.ParseFileAsync()).Object as Gedcom)
-    const locations = collectPlaces(gedcom)
-    const mappedLocations = await geocodePlaces(locations)
-    const mappedIndividuals = mapIndividuals(gedcom)
-    const points = buildPoints(gedcom, mappedLocations)
-    const relations = buildRelations(gedcom, mappedLocations, mappedIndividuals)
-    fs.writeFileSync('examples/points.geojson', JSON.stringify(points))
-    fs.writeFileSync('examples/lines.geojson', JSON.stringify(relations))
-}
 
-main()
-*/
+    //const locations = collectPlaces(gedcom)
+    //const mappedLocations = await geocodePlaces(locations)
+    //const mappedIndividuals = mapIndividuals(gedcom)
+    //const points = buildPoints(gedcom, mappedLocations)
+    //const relations = buildRelations(gedcom, mappedLocations, mappedIndividuals)
+    //fs.writeFileSync('examples/points.geojson', JSON.stringify(points))
+    //fs.writeFileSync('examples/lines.geojson', JSON.stringify(relations))
+}

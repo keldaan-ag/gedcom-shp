@@ -6,6 +6,7 @@ import 'antd/dist/antd.min.css'
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapDisplay } from './components/MapDisplay';
 import DataDisplay from './components/DataDisplay';
+import { GithubOutlined } from '@ant-design/icons';
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
             textAlign: 'center',
         }}
         >
-        Geo Gedcom 2022 Created by Keldaan
+        Geo Gedcom 2022 Created by <a href='https://github.com/keldaan-ag'>Keldaan</a>. <a href='https://github.com/keldaan-ag/geo-gedcom'>Open-source project</a>. <a href='https://github.com/keldaan-ag/geo-gedcom'>Star me</a> on <GithubOutlined /> Github
         </Footer>
     </Layout>
     </div>
