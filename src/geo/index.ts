@@ -167,14 +167,3 @@ export function buildRelations(gedcom: Gedcom, locations: Map<string,{latitude: 
     })
     return relations
 }
-
-async function main(){
-
-    //const locations = collectPlaces(gedcom)
-    //const mappedLocations = await geocodePlaces(locations)
-    //const mappedIndividuals = mapIndividuals(gedcom)
-    //const points = buildPoints(gedcom, mappedLocations)
-    //const relations = buildRelations(gedcom, mappedLocations, mappedIndividuals)
-    //fs.writeFileSync('examples/points.geojson', JSON.stringify(points))
-    //fs.writeFileSync('examples/lines.geojson', JSON.stringify(relations))
-}

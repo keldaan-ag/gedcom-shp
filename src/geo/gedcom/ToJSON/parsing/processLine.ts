@@ -129,7 +129,8 @@ export function SearchDefinitionDeep(properties: any[], searchpath: ParsingPath[
 
     // drop first tag until found -> last is global definition
     while(!pathStartWithsTag && specificPath.length > 0) {
-        pathStartWithsTag = find(tagDefinitions, y => isEqual(y.Path, specificPath));
+        // eslint-disable-next-line no-loop-func
+        pathStartWithsTag = find(tagDefinitions, (y: { Path: any }) => isEqual(y.Path, specificPath));
 
         if (!pathStartWithsTag) {
             specificPath = drop(specificPath);

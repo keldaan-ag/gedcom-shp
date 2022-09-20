@@ -32,7 +32,7 @@ export function GetReferenceId(refOrTag: string) : string | undefined {
 
     var lineSplit = split(refOrTag, '@');
 
-    if (lineSplit.length != 3) {
+    if (lineSplit.length !== 3) {
         return undefined;
     }
 

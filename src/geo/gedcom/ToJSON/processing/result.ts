@@ -25,7 +25,7 @@ import TagDefinition from '../models/TagDefinition';
 import ConvertToString from '../models/converter/ConvertToString';
 
 import { IsEmpty } from '../../common';
-import { isString, merge } from 'lodash';
+import { isString } from 'lodash';
 import fclone from 'fclone';
 import { AddStartWith } from './manipulateValues';
 
