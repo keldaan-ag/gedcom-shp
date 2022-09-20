@@ -1,4 +1,4 @@
-import { Gedcom, Individual } from '../types'
+import { Gedcom, Individual, Relation } from '../types'
 import { ParsingOptions, JsonParsing } from './gedcom'
 
 
@@ -70,6 +70,75 @@ export function mapIndividuals(gedcom: Gedcom){
     return individuals
 }
 
+export function mapRelations(gedcom: Gedcom){
+    const relations = new Map<string, Relation>()
+    gedcom.Relations.forEach(r=>{
+        relations.set(r.Id,r)
+    })
+    return relations
+}
+
+
+export function computeSosa(relations: Map<string,Relation>, individuals: Map<string,Individual>, id: string, sosa: number, gen: number, branch: string){
+    const individual = individuals.get(id)
+    let familyBranch = branch
+
+    if(individual){
+        if(gen === 5){
+            familyBranch = individual?.Fullname.split('/')[1]
+        }
+        if(individual.Relations){
+            individual.Sosa = sosa
+            individual.Branch = familyBranch
+            const parentRelation = getParentRelation(relations, individual)
+            if(parentRelation){
+                const father = individuals.get(parentRelation.Husband)
+                const mother = individuals.get(parentRelation.Wife)
+                if(father){
+                    computeSosa(relations, individuals, father.Id, 2 * sosa, gen + 1, familyBranch)
+                }
+                if(mother){
+                    computeSosa(relations, individuals, mother.Id, 2 * sosa + 1, gen + 1, familyBranch)
+                }
+            }
+        }
+    }
+}
+
+function getParentRelation(relations: Map<string,Relation>, individual: Individual){
+    let relation: Relation|undefined;
+    if(typeof individual.Relations === 'string'){
+        let potentialRelation = relations.get(individual.Relations)
+        if(potentialRelation && isParentRelation(potentialRelation, individual.Id)){
+            relation = potentialRelation
+        }
+    }
+    else{
+        individual.Relations.forEach(r=>{
+            let potentialRelation = relations.get(r)
+            if(potentialRelation && isParentRelation(potentialRelation, individual.Id)){
+                relation = potentialRelation
+            }
+        })
+    }
+    return relation
+}
+
+function isParentRelation(relation: Relation, id: string){
+    if(relation.Children){
+        if(typeof relation.Children === 'string'){
+            return relation.Children === id
+        }
+        else{
+            return relation.Children.includes(id)
+        }
+    }
+    else{
+        return false
+    }
+}
+
+
 export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>){
     const points: GeoJSON.GeoJSON = {
         "type": "FeatureCollection",
@@ -93,7 +162,9 @@ export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: num
                 deathDay: deathDate.getDay(),
                 sex: individual.Sex,
                 occupation: individual.Occupation,
-                id: individual.Id
+                id: individual.Id,
+                sosa: individual.Sosa,
+                branch: individual.Branch
             }
             const feature: GeoJSON.Feature = {geometry: point, properties: properties, type:'Feature'}
             points.features.push(feature)

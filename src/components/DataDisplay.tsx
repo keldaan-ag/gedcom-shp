@@ -1,16 +1,13 @@
 import Dragger from "antd/lib/upload/Dragger";
 import { InboxOutlined, UserOutlined } from '@ant-design/icons';
-import { Alert, Button, Checkbox, Divider, Input, message, Steps, Switch } from "antd";
+import { Alert, Button, Divider, Input, message, Steps, Switch } from "antd";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Gedcom, Status, StatusDescription } from "../types";
 import { RcFile } from "antd/lib/upload";
-import { collectPlaces, convertGedcomToJson, geocode, delay, buildPoints, buildRelations, mapIndividuals } from "../geo";
+import { collectPlaces, convertGedcomToJson, geocode, delay, buildPoints, buildRelations, mapIndividuals, mapRelations, computeSosa } from "../geo";
 import { GeoJSON } from 'geojson';
 import { ShakespeareGed, TudorGed } from '../types/gedcom'
 const { Step } = Steps;
-
-const defaultBirthOptions = ['Birth Year', 'Birth Month', 'Birth Day'];
-const defaultDeathOptions = ['Death Year', 'Death Month', 'Death Day'];
 
 export default function DataDisplay(props:{
   points:GeoJSON |undefined,
@@ -23,9 +20,9 @@ export default function DataDisplay(props:{
     const [geocodedInformations, setGeocodedInformations] = useState<string>('')
     const [warnings, setWarnings] = useState<Array<string>>([])
     const [error, setError] = useState<string>('')
-    const [computeSosa, setComputeSosa] = useState<boolean>(false)
-    const [birthOptions, setBirthOptions] = useState<Array<string>>(['Birth Year'])
-    const [deathOptions, setDeathOptions] = useState<Array<string>>(['Death Year'])
+    const [switchSosa, setSwitchSosa] = useState<boolean>(false)
+    const [firstName, setFirstName] = useState<string>('')
+    const [lastName, setLastName] = useState<string>('')
 
 
     function downloadFile(fileName: string, data: GeoJSON){
@@ -99,6 +96,16 @@ export default function DataDisplay(props:{
 
   function creation(gedcom: Gedcom, mappedLocations: Map<string,{latitude: number, longitude: number}>){
     const mappedIndividuals = mapIndividuals(gedcom)
+    const mappedRelations = mapRelations(gedcom)
+    if(switchSosa){
+      const sosaStartId = gedcom.Individuals.find(i=> i.Fullname.toLowerCase().includes(firstName.toLowerCase()) && i.Fullname.toLowerCase().includes(lastName.toLowerCase()))?.Id
+      if(sosaStartId){
+          computeSosa(mappedRelations, mappedIndividuals, sosaStartId, 1, 0, '')
+      }
+      else{
+        setWarnings(['Unable to found individual' + firstName + ' ' + lastName])
+      }
+    }
     const points = buildPoints(gedcom, mappedLocations)
     const relations = buildRelations(gedcom, mappedLocations, mappedIndividuals)
     props.setPoints(points)
@@ -144,7 +151,19 @@ export default function DataDisplay(props:{
         <p className="ant-upload-text">Click or drag file to this area to upload your familly tree</p>
         <p className="ant-upload-hint">.ged only</p>
         </Dragger>
-        <Divider children={<p>Test with template</p>} orientation="left"/>
+
+      </div>
+      <div style={{width:'50%'}}>
+        <Divider children={<p>Options</p>} orientation="left"/>
+        <div>
+          <div style={{display:'flex', gap:'10px'}}><Switch defaultChecked onChange={setSwitchSosa} checked={switchSosa}/> <p>Compute SOSA number</p></div>
+          <div style={{display:'flex', gap:'10px'}}>
+            <Input value={firstName} onChange={(e)=>{setFirstName(e.target.value)}} placeholder="First name" prefix={<UserOutlined />} />
+            <Input placeholder="Last name" value={lastName} onChange={(e)=>{setLastName(e.target.value)}}  prefix={<UserOutlined />} />
+          </div>
+        </div>
+        <Divider children={<p>Test with famous tree</p>} orientation="left"/>
+        <div style={{display:'flex', gap:'10px'}}>
         <Button onClick={()=>{
             setStatus(Status.CONVERSION)
             setTimeout(()=>conversion(ShakespeareGed), 500)
@@ -153,20 +172,7 @@ export default function DataDisplay(props:{
             setStatus(Status.CONVERSION)
             setTimeout(()=>conversion(TudorGed), 500)
         }}>Tudor Royal Family</Button>
-      </div>
-      <div style={{width:'50%'}}>
-        <Divider children={<p>Date Options</p>} orientation="left"/>
-        <Checkbox.Group options={defaultBirthOptions} value={birthOptions} onChange={(checkedValue=>{setBirthOptions(checkedValue.map(c=>c.toString()))})} />
-        <Checkbox.Group options={defaultDeathOptions} value={deathOptions} onChange={(checkedValue=>{setDeathOptions(checkedValue.map(c=>c.toString()))})} />
-        <Divider children={<p>SOSA options</p>} orientation="left"/>
-        <div>
-          <div style={{display:'flex', gap:'10px'}}><Switch defaultChecked onChange={setComputeSosa} checked={computeSosa}/> <p>Compute SOSA number</p></div>
-          <div style={{display:'flex', gap:'10px'}}>
-            <Input placeholder="First name" prefix={<UserOutlined />} />
-            <Input placeholder="Last name" prefix={<UserOutlined />} />
-          </div>
         </div>
-
       </div>
 
     </div>

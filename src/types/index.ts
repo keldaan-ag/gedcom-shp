@@ -120,6 +120,8 @@ export interface Individual {
     Baptism: Baptism;
     Surname: string;
     Givenname: string;
+    Sosa?: number;
+    Branch?: string;
 }
 
 export interface Relation {
