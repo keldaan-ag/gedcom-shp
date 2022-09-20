@@ -3,41 +3,51 @@ import { ParsingOptions, JsonParsing } from './gedcom'
 
 
 export async function convertGedcomToJson(data: string){
-    const parsingOptions = new ParsingOptions();
-    parsingOptions.SetText(data)
-    const parse = new JsonParsing(parsingOptions)
-    const result =  await parse.ParseTextAsync()
-    const gedcom = result.Object as Gedcom
-    return gedcom
+    try {
+        const parsingOptions = new ParsingOptions();
+        parsingOptions.SetText(data)
+        const parse = new JsonParsing(parsingOptions)
+        const result =  await parse.ParseTextAsync()
+        const gedcom = result.Object as Gedcom
+        return gedcom
+    } catch (error) {
+        console.error(error)
+        throw new Error(JSON.stringify(error));
+    }
 }
 
 export function collectPlaces(tree: Gedcom){
-    const locations = new Array<string>()
-    tree.Individuals.forEach(individual => {
-        if(individual.Birth?.Place && !locations.includes(individual.Birth.Place)){
-            locations.push(individual.Birth.Place)
-        }
-        if(individual.Death?.Place && !locations.includes(individual.Death.Place)){
-            locations.push(individual.Death.Place)
-        }
-    })
-    tree.Relations.forEach(relation => {
-        if(relation.Marriage !== 'Y'){
-            if(Array.isArray(relation.Marriage)){
-                relation.Marriage.forEach(m=>{
-                    if(m.Place && !locations.includes(m.Place)){
-                        locations.push(m.Place)
-                    }
-                })
+    try {
+        const locations = new Array<string>()
+        tree.Individuals.forEach(individual => {
+            if(individual.Birth?.Place && !locations.includes(individual.Birth.Place)){
+                locations.push(individual.Birth.Place)
             }
-            else{
-                if(relation.Marriage.Place && !locations.includes(relation.Marriage.Place)){
-                    locations.push(relation.Marriage.Place)
+            if(individual.Death?.Place && !locations.includes(individual.Death.Place)){
+                locations.push(individual.Death.Place)
+            }
+        })
+        tree.Relations.forEach(relation => {
+            if(relation.Marriage && relation.Marriage !== 'Y'){
+                if(Array.isArray(relation.Marriage)){
+                    relation.Marriage.forEach(m=>{
+                        if(m.Place && !locations.includes(m.Place)){
+                            locations.push(m.Place)
+                        }
+                    })
+                }
+                else{
+                    if(relation.Marriage && relation.Marriage.Place && !locations.includes(relation.Marriage.Place)){
+                        locations.push(relation.Marriage.Place)
+                    }
                 }
             }
-        }
-    })
-    return locations
+        })
+        return locations
+    } catch (error) {
+        console.error(error)
+        throw new Error(JSON.stringify(error));
+    }
 }
 
 export async function delay(milliseconds : number) {
@@ -73,8 +83,8 @@ export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: num
             const deathDate: Date = new Date(individual.Death?.Date?.Value)
 
             const properties: GeoJSON.GeoJsonProperties = {
-                firstName: individual.Fullname.split('/')[0],
-                name: individual.Fullname.split('/')[1],
+                firstName: individual.Fullname?.split('/')[0],
+                name: individual.Fullname?.split('/')[1],
                 birthYear: birthDate.getFullYear(),
                 birthMonth: birthDate.getMonth(),
                 birthDay: birthDate.getDay(),

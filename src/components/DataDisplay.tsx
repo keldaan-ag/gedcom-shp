@@ -1,21 +1,48 @@
 import Dragger from "antd/lib/upload/Dragger";
-import { InboxOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Descriptions, Divider, message, Steps } from "antd";
+import { InboxOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Button, Checkbox, Divider, Input, message, Steps, Switch } from "antd";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Gedcom, Status } from "../types";
+import { Gedcom, Status, StatusDescription } from "../types";
 import { RcFile } from "antd/lib/upload";
 import { collectPlaces, convertGedcomToJson, geocode, delay, buildPoints, buildRelations, mapIndividuals } from "../geo";
 import { GeoJSON } from 'geojson';
+import { ShakespeareGed, TudorGed } from '../types/gedcom'
 const { Step } = Steps;
 
-export default function DataDisplay(props:{setPoints:Dispatch<SetStateAction<GeoJSON>>, setRelations:Dispatch<SetStateAction<GeoJSON>>}){
-    const plainOptions = ['Birth Year', 'Birth Month', 'Birth Day', 'Death Year', 'Death Month', 'Death Day'];
+const defaultBirthOptions = ['Birth Year', 'Birth Month', 'Birth Day'];
+const defaultDeathOptions = ['Death Year', 'Death Month', 'Death Day'];
+
+export default function DataDisplay(props:{
+  points:GeoJSON |undefined,
+  relations: GeoJSON |undefined,
+  setPoints:Dispatch<SetStateAction<GeoJSON>>,
+  setRelations:Dispatch<SetStateAction<GeoJSON>>}){
+
     const [status, setStatus] = useState<Status>(Status.UPLOAD)
     const [conversionInformations, setConversionInformations] = useState<string>('')
     const [geocodedInformations, setGeocodedInformations] = useState<string>('')
+    const [warnings, setWarnings] = useState<Array<string>>([])
+    const [error, setError] = useState<string>('')
+    const [computeSosa, setComputeSosa] = useState<boolean>(false)
+    const [birthOptions, setBirthOptions] = useState<Array<string>>(['Birth Year'])
+    const [deathOptions, setDeathOptions] = useState<Array<string>>(['Death Year'])
 
-    function onOptionsChange(){
 
+    function downloadFile(fileName: string, data: GeoJSON){
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const href = URL.createObjectURL(blob);
+    
+      // create "a" HTLM element with href to file
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = fileName + ".json";
+      document.body.appendChild(link);
+      link.click();
+    
+      // clean up "a" element & remove ObjectURL
+      document.body.removeChild(link);
+      URL.revokeObjectURL(href);
     }
 
     function beforeUpload(file: RcFile, FileList: RcFile[]){
@@ -34,23 +61,35 @@ export default function DataDisplay(props:{setPoints:Dispatch<SetStateAction<Geo
     }
 
     async function conversion(data: string){
+      try {
         const gedcom = await convertGedcomToJson(data)
         const locations = collectPlaces(gedcom)
         message.success(`${gedcom.Head.File} converted to JSON successfully`);
         setStatus(Status.GEOCODE)
         setConversionInformations(`${gedcom.Individuals.length} individuals`)
         geocodePlaces(locations, gedcom)
+      } catch (err) {
+        console.log(err)
+        setError(JSON.stringify(err))
+      }
     }
 
     async function geocodePlaces(locations: string[], gedcom: Gedcom){
       const mappedLocations = new Map<string,{latitude: number, longitude: number}>();
+      const w = new Array<string>()
+
       for (let i = 0; i < locations.length; i++) {
           const res: any = await geocode(locations[i])
           await delay(2000)
           
           if(res && res.length > 0 && res[0].lat && res[0].lon){
-              setGeocodedInformations(`${i}/${locations.length} ${res[0].display_name}`)
+              setGeocodedInformations(`${i + 1}/${locations.length} ${res[0].display_name}`)
               mappedLocations.set(locations[i],{latitude: parseFloat(res[0].lat), longitude: parseFloat(res[0].lon)})
+          }
+          else{
+            w.push(locations[i])
+            setWarnings(w)
+            message.warn(`Could not geocode address: ${locations[i]}`)
           }
       }
       message.success(`${mappedLocations.size} locations geocoded successfully`);
@@ -80,21 +119,64 @@ export default function DataDisplay(props:{setPoints:Dispatch<SetStateAction<Geo
     <Step title="Geocode" description="Geocode every address" subTitle={geocodedInformations}/>
     <Step title="Creation" description="Create geojson files"/>
   </Steps>
-    <Divider children={<p>Upload</p>} orientation="left"/>
-    <Dragger onDrop={onDrop} accept=".ged" beforeUpload={beforeUpload}>
-    <p className="ant-upload-drag-icon">
-      <InboxOutlined />
-    </p>
-    <p className="ant-upload-text">Click or drag file to this area to upload your familly tree</p>
-    <p className="ant-upload-hint">.ged only</p>
-  </Dragger>
-  <Divider children={<p>Options</p>} orientation="left"/>
-  <Checkbox.Group options={plainOptions} defaultValue={['Birth Year', 'Death Year']} onChange={onOptionsChange} />
+    <p style={{marginTop:'10px'}}>{StatusDescription[status]}</p>
+    {warnings.length > 0 ? <Alert
+      message="Warning"
+      description={`Could not geocode address: ${warnings}`}
+      type="warning"
+      showIcon
+      closable
+    /> : null}
+    {error.length > 0 ? <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          closable
+    />:null }
+    <div style={{display:'flex', gap:'20px'}}>
+      <div style={{width:'50%'}}>
+        <Divider children={<p>Upload</p>} orientation="left"/>
+        <Dragger onDrop={onDrop} accept=".ged" beforeUpload={beforeUpload}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Click or drag file to this area to upload your familly tree</p>
+        <p className="ant-upload-hint">.ged only</p>
+        </Dragger>
+        <Divider children={<p>Test with template</p>} orientation="left"/>
+        <Button onClick={()=>{
+            setStatus(Status.CONVERSION)
+            setTimeout(()=>conversion(ShakespeareGed), 500)
+        }}>Shakespeare Family</Button>
+                <Button onClick={()=>{
+            setStatus(Status.CONVERSION)
+            setTimeout(()=>conversion(TudorGed), 500)
+        }}>Tudor Royal Family</Button>
+      </div>
+      <div style={{width:'50%'}}>
+        <Divider children={<p>Date Options</p>} orientation="left"/>
+        <Checkbox.Group options={defaultBirthOptions} value={birthOptions} onChange={(checkedValue=>{setBirthOptions(checkedValue.map(c=>c.toString()))})} />
+        <Checkbox.Group options={defaultDeathOptions} value={deathOptions} onChange={(checkedValue=>{setDeathOptions(checkedValue.map(c=>c.toString()))})} />
+        <Divider children={<p>SOSA options</p>} orientation="left"/>
+        <div>
+          <div style={{display:'flex', gap:'10px'}}><Switch defaultChecked onChange={setComputeSosa} checked={computeSosa}/> <p>Compute SOSA number</p></div>
+          <div style={{display:'flex', gap:'10px'}}>
+            <Input placeholder="First name" prefix={<UserOutlined />} />
+            <Input placeholder="Last name" prefix={<UserOutlined />} />
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
 
   <Divider children={<p>Download</p>} orientation="left"/>
+  <p>You can download the generated geoJSON files. Individuals.json will contain points. Relations.json will contain lines.</p>
   <div style={{display:'flex', justifyContent:'space-evenly'}}>
-  <Button type="primary">Download individuals</Button>
-  <Button type="primary">Download relations</Button>
+  <Button disabled={props.points === undefined} onClick={()=>{downloadFile('individuals', props.points)}}>Download individuals.json</Button>
+  <Button disabled={props.relations === undefined} onClick={()=>{downloadFile('relations', props.relations)}}>Download relations.json</Button>
   </div>
 </div> 
 }

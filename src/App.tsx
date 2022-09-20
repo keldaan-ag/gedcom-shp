@@ -3,7 +3,6 @@ import { Content, Footer } from 'antd/lib/layout/layout';
 import React, { useState } from 'react';
 import './App.css';
 import 'antd/dist/antd.min.css'
-import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapDisplay } from './components/MapDisplay';
 import DataDisplay from './components/DataDisplay';
 import { GithubOutlined } from '@ant-design/icons';
@@ -31,7 +30,7 @@ function App() {
             gap:'10px'
         }}
         >
-            <DataDisplay setPoints={setPoints} setRelations={setRelations}/>
+            <DataDisplay points={points} relations={relations} setPoints={setPoints} setRelations={setRelations}/>
             <MapDisplay points={points} relations={relations}/>
         </Content>
         <Footer
