@@ -12,7 +12,7 @@ export function MapDisplay(props:{points: GeoJSON, relations: GeoJSON}){
             return { strokeWidth: "1", stroke: "black" };
           }
           return {
-            fill: "#ff0000",
+            fill: "#1890ff",
             strokeWidth: "1",
             stroke: "white",
             r: "10",
@@ -26,7 +26,7 @@ export function MapDisplay(props:{points: GeoJSON, relations: GeoJSON}){
             return { strokeWidth: "1", stroke: "black" };
           }
           return {
-            fill: "#ff0000",
+            fill: "#1890ff",
             strokeWidth: "1",
             stroke: "white",
             r: "10",
