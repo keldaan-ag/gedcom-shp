@@ -26,7 +26,7 @@ function App() {
             minHeight:'100%',
             height:'100%',
             justifyContent:'space-between',
-            padding: '0 50px',
+            padding: '0px 50px',
             gap:'10px'
         }}
         >
