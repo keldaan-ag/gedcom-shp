@@ -106,7 +106,7 @@ export default function DataDisplay(props:{
         setWarnings(['Unable to found individual' + firstName + ' ' + lastName])
       }
     }
-    const points = buildPoints(gedcom, mappedLocations)
+    const points = buildPoints(gedcom, mappedLocations, mappedRelations)
     const relations = buildRelations(gedcom, mappedLocations, mappedIndividuals)
     props.setPoints(points)
     props.setRelations(relations)

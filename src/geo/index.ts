@@ -139,32 +139,41 @@ function isParentRelation(relation: Relation, id: string){
 }
 
 
-export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>){
+export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: number, longitude: number}>, relations: Map<string,Relation>){
     const points: GeoJSON.GeoJSON = {
         "type": "FeatureCollection",
         "features": []
       }
     gedcom.Individuals.forEach(individual=>{
-        if(individual?.Birth?.Place && locations.has(individual.Birth.Place)){
-            const location = locations.get(individual.Birth.Place)
+        let place = individual?.Birth?.Place && locations.has(individual.Birth.Place) ? individual.Birth.Place :
+            individual?.Death?.Place && locations.has(individual.Death.Place) ? individual.Death.Place: undefined;
+        if(place){
+            const location = locations.get(place)
             const point: GeoJSON.Point = {type: 'Point', coordinates: [location!.longitude, location!.latitude]}
             const birthDate: Date = new Date(individual.Birth?.Date?.Value)
             const deathDate: Date = new Date(individual.Death?.Date?.Value)
-
+            const firstName = individual.Fullname.split('/')[0]
+            const name = individual.Fullname.split('/')[1]
+            const birthYear = birthDate.getFullYear() ? birthDate.getFullYear() : ''
+            const deathYear = deathDate.getFullYear() ? deathDate.getFullYear(): ''
+            const fullName = `${firstName} ${name[0]}${name.slice(1).toLowerCase()}`
+            const displayName = `${fullName} (${birthYear}-${deathYear})`
             const properties: GeoJSON.GeoJsonProperties = {
-                firstName: individual.Fullname?.split('/')[0],
-                name: individual.Fullname?.split('/')[1],
-                birthYear: birthDate.getFullYear(),
+                firstName: firstName,
+                name: name,
+                fullName: fullName,
+                birthYear: birthYear,
                 birthMonth: birthDate.getMonth(),
                 birthDay: birthDate.getDay(),
-                deathYear: deathDate.getFullYear(),
+                deathYear: deathYear,
                 deathMonth: deathDate.getMonth(),
                 deathDay: deathDate.getDay(),
                 sex: individual.Sex,
                 occupation: individual.Occupation,
                 id: individual.Id,
                 sosa: individual.Sosa,
-                branch: individual.Branch
+                branch: individual.Branch,
+                displayName: displayName
             }
             const feature: GeoJSON.Feature = {geometry: point, properties: properties, type:'Feature'}
             points.features.push(feature)
