@@ -2,7 +2,7 @@ import Dragger from "antd/lib/upload/Dragger";
 import { InboxOutlined, UserOutlined } from '@ant-design/icons';
 import { Alert, Button, Divider, Input, message, Steps, Switch } from "antd";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Gedcom, Status, StatusDescription } from "../types";
+import { COLORS_32, Gedcom, Individual, Status, StatusDescription } from "../types";
 import { RcFile } from "antd/lib/upload";
 import { collectPlaces, convertGedcomToJson, geocode, delay, buildPoints, buildRelations, mapIndividuals, mapRelations, computeSosa } from "../geo";
 import { GeoJSON } from 'geojson';
@@ -94,6 +94,18 @@ export default function DataDisplay(props:{
       creation(gedcom, mappedLocations)
   }
 
+  function computeColors(individuals: Map<string, Individual>){
+    let colorFamily = new Map<string, string>()
+    individuals.forEach(individual=>{
+      if(individual.Branch && !colorFamily.has(individual.Branch)){
+        colorFamily.set(individual.Branch, COLORS_32[colorFamily.size])
+      }
+    })
+    individuals.forEach(individual=>{
+      individual.color = colorFamily.has(individual.Branch) ? colorFamily.get(individual.Branch) : "#000"
+    })
+  }
+
   function creation(gedcom: Gedcom, mappedLocations: Map<string,{latitude: number, longitude: number}>){
     const mappedIndividuals = mapIndividuals(gedcom)
     const mappedRelations = mapRelations(gedcom)
@@ -101,6 +113,7 @@ export default function DataDisplay(props:{
       const sosaStartId = gedcom.Individuals.find(i=> i.Fullname.toLowerCase().includes(firstName.toLowerCase()) && i.Fullname.toLowerCase().includes(lastName.toLowerCase()))?.Id
       if(sosaStartId){
           computeSosa(mappedRelations, mappedIndividuals, sosaStartId, 1, 0, '')
+          computeColors(mappedIndividuals)
       }
       else{
         setWarnings(['Unable to found individual' + firstName + ' ' + lastName])

@@ -7,12 +7,12 @@ export function MapDisplay(props:{points: GeoJSON, relations: GeoJSON}){
       <Map height={800} width={900} defaultCenter={[48, 2]} defaultZoom={6}>
       <GeoJson
         data={props.points}
-        styleCallback={(feature, hover) => {
+        styleCallback={(feature: GeoJSON.Feature, hover) => {
           if (feature.geometry.type === "LineString") {
             return { strokeWidth: "1", stroke: "black" };
           }
           return {
-            fill: "#1890ff",
+            fill: feature.properties["color"] ? feature.properties["color"]: "#fff",
             strokeWidth: "1",
             stroke: "white",
             r: "10",

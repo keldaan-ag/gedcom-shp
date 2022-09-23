@@ -122,6 +122,7 @@ export interface Individual {
     Givenname: string;
     Sosa?: number;
     Branch?: string;
+    color?:string;
 }
 
 export interface Relation {
@@ -142,3 +143,4 @@ export interface Gedcom {
     Relations: Relation[];
 }
 
+export const COLORS_32 = ["#2f1e45", "#861043", "#b41e40", "#c83737", "#da5a3a", "#d4a864", "#c38e65", "#b16c59", "#944c4c", "#7f3748", "#5f253e", "#662c2a", "#8e4f24", "#c6801d", "#e5a732", "#9abf44", "#679c30", "#22783f", "#164a45", "#203b68", "#345f99", "#4293ca", "#64c3de", "#a6c4bf", "#829fa1", "#687f88", "#52636d", "#394451", "#3f2352", "#7d2f7e", "#a83690", "#ce4999"]

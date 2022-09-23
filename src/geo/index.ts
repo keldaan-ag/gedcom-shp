@@ -173,7 +173,8 @@ export function buildPoints(gedcom: Gedcom, locations: Map<string,{latitude: num
                 id: individual.Id,
                 sosa: individual.Sosa,
                 branch: individual.Branch,
-                displayName: displayName
+                displayName: displayName,
+                color: individual.color ? individual.color: '#000'
             }
             const feature: GeoJSON.Feature = {geometry: point, properties: properties, type:'Feature'}
             points.features.push(feature)
