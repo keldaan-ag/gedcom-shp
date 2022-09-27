@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/geo-gedcom/static/css/main.7d74f4ca.css",
+    "main.js": "/geo-gedcom/static/js/main.794c884d.js",
+    "static/js/787.41a131b1.chunk.js": "/geo-gedcom/static/js/787.41a131b1.chunk.js",
+    "index.html": "/geo-gedcom/index.html",
+    "main.7d74f4ca.css.map": "/geo-gedcom/static/css/main.7d74f4ca.css.map",
+    "main.794c884d.js.map": "/geo-gedcom/static/js/main.794c884d.js.map",
+    "787.41a131b1.chunk.js.map": "/geo-gedcom/static/js/787.41a131b1.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7d74f4ca.css",
+    "static/js/main.794c884d.js"
+  ]
+}
