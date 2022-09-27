@@ -96,12 +96,28 @@ export default function DataDisplay(props:{
 
   function computeColors(individuals: Map<string, Individual>){
     let colorFamily = new Map<string, string>()
-    individuals.forEach(individual=>{
+
+    const sortedInidividuals = Array.from(individuals.values()).sort((a,b)=>{
+      if(!a.Sosa){
+        return -1
+      }
+      else if(!b.Sosa){ 
+        return 1
+      }
+      else{
+        const sosaPositionA = Math.log2(a.Sosa) - Math.floor(Math.log2(a.Sosa))
+        const sosaPositionB = Math.log2(b.Sosa) - Math.floor(Math.log2(b.Sosa))
+        return sosaPositionA - sosaPositionB
+      }
+    })
+
+    sortedInidividuals.forEach(individual=>{
       if(individual.Branch && !colorFamily.has(individual.Branch)){
         colorFamily.set(individual.Branch, COLORS_32[colorFamily.size])
       }
     })
-    individuals.forEach(individual=>{
+
+    sortedInidividuals.forEach(individual=>{
       individual.color = colorFamily.has(individual.Branch) ? colorFamily.get(individual.Branch) : "#000"
     })
   }
